@@ -74,12 +74,20 @@ var register = function(mac_addresses, iface, timeout, protocol) {
         for (var i = 0, l = mac_addresses.length; i < l; i++) {
             var mac_address = mac_addresses[i];
 
+            var regMac = new RegExp(mac_address);
+
             if((packet.payload.ethertype === 2054 //ensures it is an arp packet
-                    && _.isEqual(packet.payload.payload.sender_ha.addr,
-                        hex_to_int_array(mac_address)))
+                    && (
+                       int_array_to_hex(packet.payload.payload.sender_ha.addr).match(regMac)
+                    ||   _.isEqual(packet.payload.payload.sender_ha.addr,hex_to_int_array(mac_address))
+                    )
+                    )
                 || (packet.payload.ethertype === 2048
-                    && _.isEqual(packet.payload.shost.addr,
-                        hex_to_int_array(mac_address)))) {
+                    && (
+                       int_array_to_hex(packet.payload.shost.addr).match(regMac)
+                    || _.isEqual(packet.payload.shost.addr,hex_to_int_array(mac_address))
+                    )
+                    )){
                 if (just_emitted[mac_address]) {
                     break;
                 }
