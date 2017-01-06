@@ -75,7 +75,7 @@ var register = function(mac_addresses, iface, timeout, protocol) {
             var mac_address = mac_addresses[i];
 
             var regMac = new RegExp(mac_address);
-
+            var currentMacAddress=mac_address;
             if((packet.payload.ethertype === 2054 //ensures it is an arp packet
                     && (
                        int_array_to_hex(packet.payload.payload.sender_ha.addr).match(regMac)
@@ -91,8 +91,13 @@ var register = function(mac_addresses, iface, timeout, protocol) {
                 if (just_emitted[mac_address]) {
                     break;
                 }
-
-                readStream.emit('detected', mac_address);
+                if(packet.payload.ethertype === 2054){
+                    currentMacAddress=int_array_to_hex(packet.payload.payload.sender_ha.addr);
+                }
+                if(packet.payload.ethertype === 2048){
+                    currentMacAddress=int_array_to_hex(packet.payload.shost.addr);
+                }
+                readStream.emit('detected', currentMacAddress);
                 just_emitted[mac_address] = true;
                 setTimeout(function () { just_emitted[mac_address] = false; }, timeout);
 
